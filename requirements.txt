@@ -1,0 +1,7 @@
+pipx
+pybricks
+pybricksdev
+catkin_pkg
+empy==3.3.4
+NumPy
+lark

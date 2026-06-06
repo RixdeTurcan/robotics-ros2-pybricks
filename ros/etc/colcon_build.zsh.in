@@ -1,0 +1,15 @@
+source /opt/ros/kilted/setup.zsh
+
+cd "${WORKSPACES_PATH}/${WORKSPACE_NAME}" || return
+
+colcon --log-base "${LOG_PATH}/${PROJECT_NAME}" build \
+  --packages-select "${PROJECT_NAME}" \
+  --cmake-clean-cache \
+  --parallel-workers 6 \
+  --install-base "${INSTALL_PATH}/opt/ros2" \
+  --build-base "${BUILD_PATH}/build-ros-${PROJECT_NAME}" \
+  --event-handlers console_direct+ \
+  --cmake-args \
+    -DCMAKE_INSTALL_PREFIX="${INSTALL_PATH}/opt/ros2" \
+    -DCMAKE_PREFIX_PATH="${INSTALL_PATH}" \
+    -DCMAKE_LOG_PATH="${LOG_PATH}"

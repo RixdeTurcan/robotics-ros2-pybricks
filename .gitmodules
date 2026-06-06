@@ -1,0 +1,15 @@
+[submodule "driver/pc/lib/simpleble"]
+	path = driver/pc/lib/simpleble
+	url = https://github.com/simpleble/simpleble.git
+[submodule "driver/pc/lib/spdlog"]
+	path = driver/pc/lib/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "ros/lib/plotjuggler/src/plotjuggler_msgs"]
+	path = ros/lib/plotjuggler/src/plotjuggler_msgs
+	url = https://github.com/PlotJuggler/plotjuggler_msgs.git
+[submodule "ros/lib/plotjuggler/src/PlotJuggler"]
+	path = ros/lib/plotjuggler/src/PlotJuggler
+	url = https://github.com/facontidavide/PlotJuggler.git
+[submodule "ros/lib/plotjuggler/src/plotjuggler-ros-plugins"]
+	path = ros/lib/plotjuggler/src/plotjuggler-ros-plugins
+	url = https://github.com/PlotJuggler/plotjuggler-ros-plugins.git

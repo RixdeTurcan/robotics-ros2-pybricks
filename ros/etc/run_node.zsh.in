@@ -1,0 +1,13 @@
+cd @INSTALL_PATH@/.. || return
+
+echo "Current path: $(pwd)"
+
+source /opt/ros/kilted/setup.zsh
+source ./setup.zsh
+
+ROS_LOG_DIR="@LOG_PATH@"
+export ROS_LOG_DIR
+
+echo "Launching node @PROJECT_NAME@/@EXECUTABLE_NAME@"
+
+ros2 launch @PROJECT_NAME@ @EXECUTABLE_NAME@_launch.py

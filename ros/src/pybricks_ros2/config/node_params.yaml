@@ -1,0 +1,10 @@
+pybricks_driver_connector:
+  ros__parameters:
+    driver_pubsub_pub_uri: "tcp://127.0.0.1:5555"
+    driver_pubsub_sub_uri: "tcp://127.0.0.1:5556"
+robot_simple_imu:
+  ros__parameters:
+    ~: ~
+robot_fancy_clock:
+  ros__parameters:
+    ~: ~

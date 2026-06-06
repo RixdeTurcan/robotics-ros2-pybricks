@@ -1,0 +1,25 @@
+include(CMakeFindDependencyMacro)
+
+find_dependency(cppzmq REQUIRED)
+find_dependency(spdlog REQUIRED)
+
+if(@PYBRICKS_DRIVER_WITHOUT_MSGPACK@)
+else()
+	find_package(msgpackc-cxx QUIET CONFIG NAMES msgpackc-cxx msgpack)
+	if(msgpackc-cxx_FOUND)
+		if(NOT TARGET msgpack-cxx)
+			add_library(msgpack-cxx ALIAS msgpackc-cxx)
+		endif()
+	else()
+		find_dependency(msgpack-cxx CONFIG REQUIRED)
+	endif()
+endif()
+
+if(@PYBRICKS_DRIVER_WITHOUT_SIMPLEBLE@)
+else()
+	find_dependency(simpleble REQUIRED)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/pybricks-driverTargets.cmake")
+
+check_required_components(pybricks-driver)
