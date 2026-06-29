@@ -8,6 +8,8 @@
 \usepackage{amssymb}
 \usepackage{nameref}
 \usepackage{hyperref}
+\usepackage{titlesec}
+
 
 \addto{\captionsenglish}{
 	\renewcommand{\contentsname}{Summary}
@@ -27,11 +29,11 @@
 
 \section{Introduction}
 
-	The objective of this project is to model and control a Pybricks motor. The clock hand is designed to be very lightweight so that external mechanical effects can be neglected.
+	The objective of this project is to model and control a Pybricks motor. The clock hand is designed to be very lightweight, so that external mechanical effects can be neglected.
 	
-	The system uses a Medium Powered Up motor, which is a DC motor equipped with an internal gearbox. Although such motors exhibit typical nonlinear behaviors, these effects significantly influence the motor dynamics and must therefore be properly modeled.
+	The system uses a Medium Powered Up™ motor, which is a DC motor equipped with an internal gearbox. Although such motors exhibit typical nonlinear behaviors, these effects significantly influence the motor dynamics and must therefore be properly modeled.
 	
-	Once the model is established, the motor will be controlled in torque to demonstrate a 10-second clock. The clock hand will complete one full rotation before quickly returning backward to its initial position.
+	Once the model is established, the motor will be controlled in torque to demonstrate a clock that completes a full cycle in 10 seconds. The clock hand will complete one full rotation before quickly returning backward to its initial position.
 	
 	In the following sections, we will first derive the state-space model of the motor. Then, experiments will be conducted to identify the physical parameters. Finally, a control strategy will be implemented to achieve the desired clock motion.
 	
@@ -41,9 +43,9 @@
 		\caption{3D view of the robot}
 	\end{figure}
 	
-\section{continuous-time modeling}
+\section{Continuous-Time modeling}
 
-	The Pybricks firmware provides an internal sensing system that publishes the external rotor angle, angular velocity, and estimated load torque at a frequency of 100 Hz.
+	The Pybricks firmware provides an internal sensing system that publishes the end shaft angle, angular velocity, and estimated load torque at a frequency of 100 Hz.
 	
 	Communication between the embedded system and ROS is achieved via Bluetooth Low Energy (BLE) using the GATT protocol. This communication introduces a significant and variable delay, with an average latency of approximately 30 ms. The delay is measured in real time.
 	
@@ -93,7 +95,7 @@
 		The state dynamics can be expressed as follows:
 		\begin{align}
 			J_q \ddot{q}(t) &= \tau_{rq}(t) - \tau_{d}(t) - K_q \dot{q}(t) \\
-			J_r \ddot{r}(t) &= K_m V_m p(t) - \tau_{rq}(t) - K_e \dot{r}(t)
+			J_r \ddot{r}(t) &= K_m V_m p(t) - \tau_{rq}(t) - K_r \dot{r}(t)
 		\end{align}
 		where:
 		\begin{itemize}
@@ -101,7 +103,7 @@
 			\item $J_q$ is the equivalent inertia of the gearbox and external shaft.
 			\item $V_m$ is the maximum voltage corresponding to 100\% duty-cycle.
 			\item $K_m$ is the motor torque constant, relating the applied voltage to the generated torque (assuming negligible inductance effects).
-			\item $K_e$ is the electrical damping coefficient, relating rotor velocity to an opposing torque (back-EMF effect).
+			\item $K_r$ is the electrical damping coefficient, relating rotor velocity to an opposing torque (back-EMF effect).
 			\item $K_q$ is the mechanical viscous friction coefficient associated with the gearbox and external shaft.
 			\item $\tau_{rq}(t)$ is the torque transmitted through the gearbox, capturing nonlinear effects such as backlash and friction.
 			\item $\tau_d$ is the dry friction induced by the gearbox.
@@ -113,7 +115,7 @@
 		\end{equation}
 		where $\tau_{dM}$ denotes the maximum static friction torque that must be overcome to initiate motion.
 		
-		The coupling torque $\tau_{rq}$ between the rotor and the end shaft depends on the mechanical backlash and can be modelised using a piecewise model. Let $\Delta_b$ denote the half-width of the backlash dead zone, expressed at the output shaft.
+		The coupling torque $\tau_{rq}$ between the rotor and the end shaft depends on the mechanical backlash and can be modeled using a piecewise model. Let $\Delta_b$ denote the half-width of the backlash dead zone, expressed at the output shaft.
 		\begin{itemize}
 			\item \textbf{Dead-zone (no contact):} when the relative displacement remains within the backlash gap:
 			\begin{equation}
@@ -127,7 +129,7 @@
 			and the two subsystems evolve independently:
 			\begin{align}
 				J_q \ddot{q}(t) &= - K_q \dot{q}(t) \\
-				J_r \ddot{r}(t) &= K_m V_m p(t) - K_e \dot{r}(t)
+				J_r \ddot{r}(t) &= K_m V_m p(t) - K_r \dot{r}(t)
 			\end{align}
 			
 			\item \textbf{Contact condition:} when $\big|r(t)-q(t)\big| = \Delta_b$, the shafts come into contact. The impact is assumed perfectly inelastic and damping during impact is neglected, so that the velocities instantaneously match:
@@ -140,7 +142,7 @@
 			To determine whether contact is maintained or lost, we introduce the \emph{free accelerations} $\breve{\ddot{q}}(t)$ and $\breve{\ddot{r}}(t)$ (i.e., accelerations in the absence of coupling):
 			
 			\begin{align}
-				\breve{\ddot{r}}(t) &= \frac{K_m V_m}{J_r} p(t) - \frac{K_e}{J_r} \dot{r}(t) \\
+				\breve{\ddot{r}}(t) &= \frac{K_m V_m}{J_r} p(t) - \frac{K_r}{J_r} \dot{r}(t) \\
 				\breve{\ddot{q}}(t) &= - \frac{K_q}{J_q} \dot{q}(t)
 			\end{align}
 			
@@ -157,8 +159,8 @@
 			
 			These conditions can be rewritten in terms of the control input $p(t)$:
 			\begin{align}
-				r(t)>q(t) \text{ and}\ p(t) \ge \frac{J_r}{K_m V_m} \left( \frac{K_e}{J_r} - \frac{K_q}{J_q}  \right) \dot{q}(t) \\
-				r(t)<q(t) \text{ and}\ p(t) \le \frac{J_r}{K_m V_m} \left( \frac{K_e}{J_r} - \frac{K_q}{J_q}  \right) \dot{q}(t)
+				r(t)>q(t) \text{ and}\ p(t) \ge \frac{J_r}{K_m V_m} \left( \frac{K_r}{J_r} - \frac{K_q}{J_q}  \right) \dot{q}(t) \\
+				r(t)<q(t) \text{ and}\ p(t) \le \frac{J_r}{K_m V_m} \left( \frac{K_r}{J_r} - \frac{K_q}{J_q}  \right) \dot{q}(t)
 			\end{align}
 			
 			These expressions show that if the viscous friction on the rotor dominates that of the output shaft, losing contact requires a control input of opposite sign (i.e., no control input will maintain contact).
@@ -176,10 +178,10 @@
 			In this state, the end shaft moves freely and the rotor is directly controlled by the input duty cycle until a contact is made. The dynamic equation is expressed as follows:
 			\begin{align}
 				J_q \ddot{q}(t) &= - K_q \dot{q}(t) \\
-				J_r \ddot{r}(t) &= K_m V_m p(t) - K_e \dot{r}(t)
+				J_r \ddot{r}(t) &= K_m V_m p(t) - K_r \dot{r}(t)
 			\end{align}	
 			
-			A contact happens when $\big|q(t)-r(t)\big| = \Delta_b$, that imply generally a discontinuity in the rotor velocity $\dot{r}(t)$, due to the inelastic choc.
+			A contact happens when $\big|q(t)-r(t)\big| = \Delta_b$, that imply generally a discontinuity in the rotor velocity $\dot{r}(t)$, due to the inelastic impact.
 			
 			
 		\subsubsection{Contact in the gearbox - $r(t)>q(t)$ - Control input greater than dry friction}
@@ -188,9 +190,9 @@
 				q(t) &= r(t) - \Delta_b \\
 				\dot{q}(t) &= \dot{r}(t) \\
 				\ddot{q}(t) &= \ddot{r}(t) \\
-				p(t) &\ge \frac{J_r}{K_m V_m} \left( \frac{K_e}{J_r} - \frac{K_q}{J_q} \right) \dot{q}(t) \\
+				p(t) &\ge \frac{J_r}{K_m V_m} \left( \frac{K_r}{J_r} - \frac{K_q}{J_q} \right) \dot{q}(t) \\
 				K_mV_mp(t) &\ge \tau_{dM} \\
-				\big( J_r + J_q \big) \ddot{q}(t) &= K_mV_mp(t) - \tau_{dM} - \big(K_e+K_q\big)\dot{q}(t)
+				\big( J_r + J_q \big) \ddot{q}(t) &= K_mV_mp(t) - \tau_{dM} - \big(K_r+K_q\big)\dot{q}(t)
 			\end{align}
 	
 	
@@ -200,14 +202,14 @@
 				q(t) &= r(t) - \Delta_b \\
 				\dot{q}(t) &= \dot{r}(t) \\
 				\ddot{q}(t) &= \ddot{r}(t) \\
-				p(t) &\ge \frac{K_e}{K_m V_m} \dot{q}(t) \\
+				p(t) &\ge \frac{K_r}{K_m V_m} \dot{q}(t) \\
 				K_mV_mp(t) &< \tau_{dM} \\
-				\big( J_r + J_q \big) \ddot{q}(t) &= - \big(K_e+K_q\big)\dot{q}(t)
+				\big( J_r + J_q \big) \ddot{q}(t) &= - \big(K_r+K_q\big)\dot{q}(t)
 			\end{align}
 			
 			This state may not exist if:
 			\begin{equation}
-				K_e \dot{q}(t) > \tau_{dM}
+				K_r \dot{q}(t) > \tau_{dM}
 			\end{equation}
 			
 		\subsubsection{Contact in the gearbox - $r(t)<q(t)$ - Control input greater than dry friction}
@@ -216,9 +218,9 @@
 				q(t) &= r(t) + \Delta_b \\
 				\dot{q}(t) &= \dot{r}(t) \\
 				\ddot{q}(t) &= \ddot{r}(t) \\
-				p(t) &\le \frac{J_r}{K_m V_m} \left( \frac{K_e}{J_r} - \frac{K_q}{J_q} \right) \dot{q}(t) \\
+				p(t) &\le \frac{J_r}{K_m V_m} \left( \frac{K_r}{J_r} - \frac{K_q}{J_q} \right) \dot{q}(t) \\
 				K_mV_mp(t) &\le -\tau_{dM} \\
-				\big( J_r + J_q \big) \ddot{q}(t) &= K_mV_mp(t) + \tau_{dM} - \big(K_e+K_q\big)\dot{q}(t)
+				\big( J_r + J_q \big) \ddot{q}(t) &= K_mV_mp(t) + \tau_{dM} - \big(K_r+K_q\big)\dot{q}(t)
 			\end{align}
 		
 		
@@ -228,19 +230,19 @@
 				q(t) &= r(t) + \Delta_b \\
 				\dot{q}(t) &= \dot{r}(t) \\
 				\ddot{q}(t) &= \ddot{r}(t) \\
-				p(t) &\le \frac{K_e}{K_m V_m} \dot{q}(t) \\
+				p(t) &\le \frac{K_r}{K_m V_m} \dot{q}(t) \\
 				K_mV_mp(t) &> -\tau_{dM} \\
-				\big( J_r + J_q \big) \ddot{q}(t) &= - \big(K_e+K_q\big)\dot{q}(t)
+				\big( J_r + J_q \big) \ddot{q}(t) &= - \big(K_r+K_q\big)\dot{q}(t)
 			\end{align}
 			
 			This state may not exist if:
 			\begin{equation}
-				K_e \dot{q}(t) < -\tau_{dM}
+				K_r \dot{q}(t) < -\tau_{dM}
 			\end{equation}
 	
 	\subsection{State-space matrix form modelisation}
 	
-		In order to synthesize the multiple states, let's introduce the right-superscript $\circ^i$ that decline a vector or matrix $\circ$ in different forms depending on the contact state:
+		In order to synthesize the multiple states, let's introduce the right-superscript $\circ^i$ that denotes a vector or matrix $\circ$ in different forms depending on the contact state:
 		\begin{itemize}
 			\item $i = 0$ activates when there is no contact.
 			\item $i = 1$ activates when there is contact, $r(t)>q(t)$ and the control input greater than dry friction.
@@ -249,43 +251,137 @@
 			\item $i = 4$ activates when there is contact, $r(t)<q(t)$ and the control input lower than dry friction.
 		\end{itemize}
 		
-		The standard state-space form is can be written as:
+		The standard state-space form can be written as:
 		\begin{align}
-			\dot{x}^i &= A^i x^i + B^i u \\
-			\dot{z} &= C^i x^i
+			\dot{x}^i &= A^i x^i + B^i u^i \\
+			z &= C^i x^i
 		\end{align}
 		
-		\subsubsection{Control and observation vectors}
-			These vectors does not depend on the contact state, and are expressed as:
-			\begin{align}
-				u &= \begin{pmatrix}
-					p
-				\end{pmatrix} \\
-				z &= \begin{pmatrix}
-				q \\
-				\dot{q}
-				\end{pmatrix}
-			\end{align}
-		
-		\subsubsection{State vector}
-			As modelised in the previous section, when there is a contact, $r(t)$ and $q(t)$ are linearly linked, so $r(t)$ should not be in the state vector in this case.
-			So $x^i$ is expressed as:
-			\begin{align}
-				x^0 &= \begin{pmatrix}
-					q \\
-					\dot{q} \\
-					r \\
-					\ddot{r}
-				\end{pmatrix} \\
-				\forall i \in \big\{1, 2, 3, 4\big\} \text{, }
-				x^i &= \begin{pmatrix}
+		\subsubsection{State vectors}
+			The observation vectors do not depend on the contact state, and are expressed as:
+			\begin{equation}
+				z = \begin{pmatrix}
 					q \\
 					\dot{q}
 				\end{pmatrix}
+			\end{equation}
+			
+			It is introduced $\tilde{p}^1$ and $\tilde{p}^3$ the control expressed as torque and reduced by the dry friction:
+			\begin{align}
+				\tilde{p}^0(t) &= K_mV_mp(t) \\
+				\tilde{p}^1(t) &= K_mV_mp(t) - \tau_{dM} \\
+				\tilde{p}^2(t) &= K_mV_mp(t) \\
+				\tilde{p}^3(t) &= K_mV_mp(t) + \tau_{dM} \\
+				\tilde{p}^4(t) &= K_mV_mp(t)
 			\end{align}
+			
+			The control vectors depend in the contact state, and is expressed as:
+			\begin{equation}
+				u^i = \begin{pmatrix}
+					\tilde{p}^i
+				\end{pmatrix}
+			\end{equation}
+			
+			As modeled in the previous section, when there is a contact, $r(t)$ and $q(t)$ are linearly linked, so $r(t)$ should not be in the state vector in this case.
+			So $x^i$ is expressed as:
+			\begin{equation}
+				x^0 = \begin{pmatrix}
+					q \\
+					\dot{q} \\
+					r \\
+					\dot{r}
+				\end{pmatrix} \text{, }
+				x^1 = \begin{pmatrix}
+					q \\
+					\dot{q}
+				\end{pmatrix} \text{, }
+				x^2 = \begin{pmatrix}
+					q \\
+					\dot{q}
+				\end{pmatrix} \text{, }
+				x^3 = \begin{pmatrix}
+					q \\
+					\dot{q}
+				\end{pmatrix} \text{, }
+				x^4 = \begin{pmatrix}
+					q \\
+					\dot{q}
+				\end{pmatrix} \text{, }
+			\end{equation}
 				
+		\subsubsection{State matrices}
+			The previous modelisation can be rewritten in the form of state-space matrices:
+			
+			\begin{equation}
+				\begin{matrix*}[l]
+					A^0 = \begin{pmatrix}
+						0 & 1 & 0 & 0 \\
+						0 & -\frac{K_q}{J_q} & 0 & 0\\
+						0 & 0 & 0 & 1 \\
+						0 & 0 & 0 & -\frac{K_r}{J_r}
+					\end{pmatrix}&
+					B^0 = \begin{pmatrix}
+						0 \\
+						0 \\
+						0 \\
+						\frac{1}{J_r}
+					\end{pmatrix}&
+					C^0 = \begin{pmatrix}
+						1 & 0 & 0 & 0 \\
+						0 & 1 & 0 & 0 \\
+					\end{pmatrix} \\
+					A^1 = \begin{pmatrix}
+						0 & 1 \\
+						0 & -\frac{K_r+K_q}{J_r+J_q}
+					\end{pmatrix}&
+					B^1 = \begin{pmatrix}
+						0 \\
+						\frac{1}{J_q}\\
+					\end{pmatrix}&
+					C^1 = \begin{pmatrix}
+						1 & 0 \\
+						0 & 1
+					\end{pmatrix} \\
+					A^2 = \begin{pmatrix}
+						0 & 1 \\
+						0 & -\frac{K_r+K_q}{J_r+J_q}
+					\end{pmatrix}&
+					B^2 = \begin{pmatrix}
+						0 \\
+						0 \\
+					\end{pmatrix}&
+					C^2 = \begin{pmatrix}
+						1 & 0 \\
+						0 & 1
+					\end{pmatrix} \\
+					A^3 = \begin{pmatrix}
+						0 & 1 \\
+						0 & -\frac{K_r+K_q}{J_r+J_q}
+					\end{pmatrix}&
+					B^3 = \begin{pmatrix}
+						0 \\
+						\frac{1}{J_q}\\
+					\end{pmatrix}&
+					C^3 = \begin{pmatrix}
+						1 & 0 \\
+						0 & 1
+					\end{pmatrix} \\
+					A^4 = \begin{pmatrix}
+						0 & 1 \\
+						0 & -\frac{K_r+K_q}{J_r+J_q}
+					\end{pmatrix}&
+					B^4 = \begin{pmatrix}
+						0 \\
+						0\\
+					\end{pmatrix}&
+					C^4 = \begin{pmatrix}
+						1 & 0 \\
+						0 & 1
+					\end{pmatrix}
+				\end{matrix*}
+			\end{equation}
 		
 		
-\section{discrete-time modeling}
+\section{Discrete-Time modeling}
 
 \end{document}
