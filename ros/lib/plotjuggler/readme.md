@@ -1,21 +1,24 @@
 # Building PlotJuggler from sources
 
-In order to have the last version of PlotJuggler, we recommend to directly build the softwxare from source.
+To use the latest version of PlotJuggler, it is recommended to build the software from source.
 
-The first step, if not already done, is to initialize the repository submodules :
+First, initialize and update the repository submodules (if you have not already done so):
 ```sh
 git submodule init
 git submodule update
 ```
 
-Then, if not done in another ROS2 project, update rosdep :
+Next, initialize and update rosdep (if not already done in another ROS 2 project):
 ```sh
 sudo rosdep init
 rosdep update
 ```
-Now, we can install the dependencies, then build PlotJuggler and its ROS2 plugin 
-(set INSTALL_PATH with your desired absolute install path, 
-usually the same than this project install path, to have the generated launch script works directly) :
+
+Then, install the dependencies and build PlotJuggler along with its ROS 2 plugin.
+
+Set INSTALL_PATH to your desired absolute installation path. 
+It is usually best to use the same installation path as this project so that the generated launch script works correctly.
+
 ```sh
     cd ros/lib/plotjuggler
     rosdep install --from-paths src --ignore-src -y
