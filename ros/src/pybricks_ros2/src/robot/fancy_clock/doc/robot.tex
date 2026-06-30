@@ -10,10 +10,10 @@
 \usepackage{hyperref}
 \usepackage{titlesec}
 
+\setcounter{tocdepth}{3}
 
 \addto{\captionsenglish}{
 	\renewcommand{\contentsname}{Summary}
-	\setcounter{tocdepth}{3}
 }
 
 \title{Robot : "Fancy clock"}
@@ -94,8 +94,8 @@
 	
 		The state dynamics can be expressed as follows:
 		\begin{align}
-			J_q \ddot{q}(t) &= \tau_{rq}(t) - \tau_{d}(t) - K_q \dot{q}(t) \\
-			J_r \ddot{r}(t) &= K_m V_m p(t) - \tau_{rq}(t) - K_r \dot{r}(t)
+			J_q \ddot{q}(t) &= \Gamma_{rq}(t) - \Gamma_d(t) - K_q \dot{q}(t) \\
+			J_r \ddot{r}(t) &= K_m V_m p(t) - \Gamma_{rq}(t) - K_r \dot{r}(t)
 		\end{align}
 		where:
 		\begin{itemize}
@@ -105,17 +105,17 @@
 			\item $K_m$ is the motor torque constant, relating the applied voltage to the generated torque (assuming negligible inductance effects).
 			\item $K_r$ is the electrical damping coefficient, relating rotor velocity to an opposing torque (back-EMF effect).
 			\item $K_q$ is the mechanical viscous friction coefficient associated with the gearbox and external shaft.
-			\item $\tau_{rq}(t)$ is the torque transmitted through the gearbox, capturing nonlinear effects such as backlash and friction.
-			\item $\tau_d$ is the dry friction induced by the gearbox.
+			\item $\Gamma_{rq}(t)$ is the torque transmitted through the gearbox, capturing nonlinear effects such as backlash and friction.
+			\item $\Gamma_d$ is the dry friction induced by the gearbox.
 		\end{itemize}
 		
 		The dry friction is modeled using a saturation function:
 		\begin{equation}
-			\tau_d(t) = \min\big(\max\big(\tau_{rq}(t), -\tau_{dM}\big), \tau_{dM}\big)
+			\Gamma_d(t) = \min\big(\max\big(\Gamma_{rq}(t), -\Gamma_{dM}\big), \Gamma_{dM}\big)
 		\end{equation}
-		where $\tau_{dM}$ denotes the maximum static friction torque that must be overcome to initiate motion.
+		where $\Gamma_{dM}$ denotes the maximum static friction torque that must be overcome to initiate motion.
 		
-		The coupling torque $\tau_{rq}$ between the rotor and the end shaft depends on the mechanical backlash and can be modeled using a piecewise model. Let $\Delta_b$ denote the half-width of the backlash dead zone, expressed at the output shaft.
+		The coupling torque $\Gamma_{rq}$ between the rotor and the end shaft depends on the mechanical backlash and can be modeled using a piecewise model. Let $\Delta_b$ denote the half-width of the backlash dead zone, expressed at the output shaft.
 		\begin{itemize}
 			\item \textbf{Dead-zone (no contact):} when the relative displacement remains within the backlash gap:
 			\begin{equation}
@@ -123,8 +123,8 @@
 			\end{equation}	
 			there is no mechanical contact between the shafts. Consequently,
 			\begin{align}
-				\tau_{rq}(t) &= 0 \\
-				\tau_{d}(t) &= 0
+				\Gamma_{rq}(t) &= 0 \\
+				\Gamma_d(t) &= 0
 			\end{align}
 			and the two subsystems evolve independently:
 			\begin{align}
@@ -137,7 +137,7 @@
 				\dot{q}(t) = \dot{r}(t).
 			\end{equation}
 						
-			Since contact occurs on only one side of the backlash, the sign of $\tau_{rq}(t)$ depends on the relative position of the shafts.
+			Since contact occurs on only one side of the backlash, the sign of $\Gamma_{rq}(t)$ depends on the relative position of the shafts.
 			
 			To determine whether contact is maintained or lost, we introduce the \emph{free accelerations} $\breve{\ddot{q}}(t)$ and $\breve{\ddot{r}}(t)$ (i.e., accelerations in the absence of coupling):
 			
@@ -191,8 +191,8 @@
 				\dot{q}(t) &= \dot{r}(t) \\
 				\ddot{q}(t) &= \ddot{r}(t) \\
 				p(t) &\ge \frac{J_r}{K_m V_m} \left( \frac{K_r}{J_r} - \frac{K_q}{J_q} \right) \dot{q}(t) \\
-				K_mV_mp(t) &\ge \tau_{dM} \\
-				\big( J_r + J_q \big) \ddot{q}(t) &= K_mV_mp(t) - \tau_{dM} - \big(K_r+K_q\big)\dot{q}(t)
+				K_mV_mp(t) &\ge \Gamma_{dM} \\
+				\big( J_r + J_q \big) \ddot{q}(t) &= K_mV_mp(t) - \Gamma_{dM} - \big(K_r+K_q\big)\dot{q}(t)
 			\end{align}
 	
 	
@@ -203,13 +203,13 @@
 				\dot{q}(t) &= \dot{r}(t) \\
 				\ddot{q}(t) &= \ddot{r}(t) \\
 				p(t) &\ge \frac{K_r}{K_m V_m} \dot{q}(t) \\
-				K_mV_mp(t) &< \tau_{dM} \\
+				K_mV_mp(t) &< \Gamma_{dM} \\
 				\big( J_r + J_q \big) \ddot{q}(t) &= - \big(K_r+K_q\big)\dot{q}(t)
 			\end{align}
 			
 			This state may not exist if:
 			\begin{equation}
-				K_r \dot{q}(t) > \tau_{dM}
+				K_r \dot{q}(t) > \Gamma_{dM}
 			\end{equation}
 			
 		\subsubsection{Contact in the gearbox - $r(t)<q(t)$ - Control input greater than dry friction}
@@ -219,8 +219,8 @@
 				\dot{q}(t) &= \dot{r}(t) \\
 				\ddot{q}(t) &= \ddot{r}(t) \\
 				p(t) &\le \frac{J_r}{K_m V_m} \left( \frac{K_r}{J_r} - \frac{K_q}{J_q} \right) \dot{q}(t) \\
-				K_mV_mp(t) &\le -\tau_{dM} \\
-				\big( J_r + J_q \big) \ddot{q}(t) &= K_mV_mp(t) + \tau_{dM} - \big(K_r+K_q\big)\dot{q}(t)
+				K_mV_mp(t) &\le -\Gamma_{dM} \\
+				\big( J_r + J_q \big) \ddot{q}(t) &= K_mV_mp(t) + \Gamma_{dM} - \big(K_r+K_q\big)\dot{q}(t)
 			\end{align}
 		
 		
@@ -231,13 +231,13 @@
 				\dot{q}(t) &= \dot{r}(t) \\
 				\ddot{q}(t) &= \ddot{r}(t) \\
 				p(t) &\le \frac{K_r}{K_m V_m} \dot{q}(t) \\
-				K_mV_mp(t) &> -\tau_{dM} \\
+				K_mV_mp(t) &> -\Gamma_{dM} \\
 				\big( J_r + J_q \big) \ddot{q}(t) &= - \big(K_r+K_q\big)\dot{q}(t)
 			\end{align}
 			
 			This state may not exist if:
 			\begin{equation}
-				K_r \dot{q}(t) < -\tau_{dM}
+				K_r \dot{q}(t) < -\Gamma_{dM}
 			\end{equation}
 	
 	\subsection{State-space matrix form modelisation}
@@ -269,9 +269,9 @@
 			It is introduced $\tilde{p}^1$ and $\tilde{p}^3$ the control expressed as torque and reduced by the dry friction:
 			\begin{align}
 				\tilde{p}^0(t) &= K_mV_mp(t) \\
-				\tilde{p}^1(t) &= K_mV_mp(t) - \tau_{dM} \\
+				\tilde{p}^1(t) &= K_mV_mp(t) - \Gamma_{dM} \\
 				\tilde{p}^2(t) &= K_mV_mp(t) \\
-				\tilde{p}^3(t) &= K_mV_mp(t) + \tau_{dM} \\
+				\tilde{p}^3(t) &= K_mV_mp(t) + \Gamma_{dM} \\
 				\tilde{p}^4(t) &= K_mV_mp(t)
 			\end{align}
 			
@@ -336,52 +336,85 @@
 					\end{pmatrix}&
 					B^1 = \begin{pmatrix}
 						0 \\
-						\frac{1}{J_q}\\
+						\frac{1}{J_r+J_q}\\
 					\end{pmatrix}&
 					C^1 = \begin{pmatrix}
 						1 & 0 \\
 						0 & 1
 					\end{pmatrix} \\
-					A^2 = \begin{pmatrix}
-						0 & 1 \\
-						0 & -\frac{K_r+K_q}{J_r+J_q}
-					\end{pmatrix}&
+					A^2 = A^1&
 					B^2 = \begin{pmatrix}
 						0 \\
 						0 \\
 					\end{pmatrix}&
-					C^2 = \begin{pmatrix}
-						1 & 0 \\
-						0 & 1
-					\end{pmatrix} \\
-					A^3 = \begin{pmatrix}
-						0 & 1 \\
-						0 & -\frac{K_r+K_q}{J_r+J_q}
-					\end{pmatrix}&
-					B^3 = \begin{pmatrix}
-						0 \\
-						\frac{1}{J_q}\\
-					\end{pmatrix}&
-					C^3 = \begin{pmatrix}
-						1 & 0 \\
-						0 & 1
-					\end{pmatrix} \\
-					A^4 = \begin{pmatrix}
-						0 & 1 \\
-						0 & -\frac{K_r+K_q}{J_r+J_q}
-					\end{pmatrix}&
-					B^4 = \begin{pmatrix}
-						0 \\
-						0\\
-					\end{pmatrix}&
-					C^4 = \begin{pmatrix}
-						1 & 0 \\
-						0 & 1
-					\end{pmatrix}
+					C^2 = C^1 \\
+					A^3 = A^1&
+					B^3 = B^1&
+					C^3 = C^1 \\
+					A^4 = A^1&
+					B^4 = B^2&
+					C^4 = C^1
 				\end{matrix*}
 			\end{equation}
 		
 		
 \section{Discrete-Time modeling}
+
+	In order to use the motor model in a fixed-period sampled control loop, the system must be discretised.
+	
+	It is assumed that the control input remains constant over each sampling period $T$ (zero-order hold).
+	Under this assumption, the discrete-time model ($A_d^i, B_d^i, C_d^i$) can be computed using the matrix exponential:
+	
+	\begin{align}
+		A_d^i &= e^{A^iT} \\
+		B_d^i &= \int_{s=0}^T e^{A^i(T-s)}B^ids \\
+		C_d^i &= C^i
+	\end{align}
+	
+
+	This yields the following matrices:
+	\begin{equation}
+		\begin{matrix*}[l]
+			A_d^0 = \begin{pmatrix}
+				1 & \tau_q(1-e^{-\frac{T}{\tau_q}}) & 0 & 0 \\
+				0 & e^{-\frac{T}{\tau_q}} & 0 & 0 \\
+				0 & 0 & 1 & \tau_r(1-e^{-\frac{T}{\tau_r}}) \\
+				0 & 0 & 0 & e^{-\frac{T}{\tau_r}}
+			\end{pmatrix}&
+			B_d^0 = \begin{pmatrix}
+				0 \\
+				0 \\
+				\frac{T - \tau_r (1 - e^{-\frac{T}{\tau_r}})}{K_r} \\
+				\frac{1-e^{-\frac{T}{\tau_r}}}{K_r}
+			\end{pmatrix} \\
+			A_d^1 = \begin{pmatrix}
+				1 & \tau(1-e^{-\frac{T}{\tau}}) \\
+				0 & e^{-\frac{T}{\tau}}
+			\end{pmatrix}&
+			B_d^1 = \begin{pmatrix}
+				\frac{T - \tau (1 - e^{-\frac{T}{\tau}})}{K} \\
+				\frac{1-e^{-\frac{T}{\tau}}}{K}
+			\end{pmatrix} \\
+			A_d^2 = A_d^1&
+			B_d^2 = \begin{pmatrix}
+				0 \\
+				0 \\
+			\end{pmatrix} \\
+			A_d^3 = A_d^1&
+			B_d^3 = B_d^1 \\
+			A_d^4 = A_d^1&
+			B_d^4 = B_d^2
+		\end{matrix*}
+	\end{equation}
+	with:
+	\begin{align}
+		J &= J_q+J_r \\
+		K &= K_q+K_r \\
+		\tau_r &= \frac{J_r}{K_r} \text{, }
+		\tau_q = \frac{J_q}{K_q} \text{, }
+		\tau = \frac{J}{K}
+	\end{align}
+
+
 
 \end{document}
